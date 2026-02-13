@@ -2,7 +2,7 @@
 
 A Node.js CLI wrapper around the official-ish Streak SDK package [`streakapi`](https://www.npmjs.com/package/streakapi), based on the [StreakYC/node-api-wrapper](https://github.com/StreakYC/node-api-wrapper).
 
-> This project is a CLI over the SDK (not a direct HTTP client).
+> This project primarily uses the SDK, with minimal direct HTTP calls for endpoints not currently exposed by `streakapi` (e.g. meetings).
 
 ## Quick start
 
@@ -39,6 +39,10 @@ streak --token your_api_key_here me
 - `streak pipelines boxes <pipelineKey>`
 - `streak boxes get <boxKey>`
 - `streak boxes comments <boxKey>`
+- `streak boxes meetings add <boxKey> --meeting-type <type> --start <ms> --duration <ms>`
+- `streak boxes meetings list <boxKey>`
+- `streak meetings complete <meetingKey>`
+- `streak meetings delete <meetingKey>`
 - `streak search <query>`
 
 Global flags:
@@ -54,6 +58,10 @@ streak pipelines list
 streak pipelines boxes agxzfm15c3RyZWFrchMLEghQaXBlbGluZRjP0gEM
 streak boxes get agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx
 streak boxes comments agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx
+streak boxes meetings add agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx --meeting-type PHONE_CALL --start 1739443200000 --duration 1800000
+streak boxes meetings list agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx
+streak meetings complete agxzfm15c3RyZWFrchMLEgdNZWV0aW5nGJkBDA
+streak meetings delete agxzfm15c3RyZWFrchMLEgdNZWV0aW5nGJkBDA
 streak search "acme renewal"
 ```
 

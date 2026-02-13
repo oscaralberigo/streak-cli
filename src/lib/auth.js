@@ -7,7 +7,7 @@ export function resolveToken({ token }) {
   return token || process.env.STREAK_API_KEY;
 }
 
-export function createClient({ token }) {
+export function getRequiredToken({ token }) {
   const resolvedToken = resolveToken({ token });
 
   if (!resolvedToken) {
@@ -17,5 +17,9 @@ export function createClient({ token }) {
     );
   }
 
-  return new Streak(resolvedToken);
+  return resolvedToken;
+}
+
+export function createClient({ token }) {
+  return new Streak(getRequiredToken({ token }));
 }

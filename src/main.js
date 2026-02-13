@@ -1,5 +1,5 @@
 import { parseArgv } from './lib/args.js';
-import { createClient } from './lib/auth.js';
+import { createClient, getRequiredToken } from './lib/auth.js';
 import { CliError, normalizeSdkError } from './lib/errors.js';
 import { getHelpText, resolveCommand, runCommand } from './commands/index.js';
 
@@ -13,8 +13,9 @@ export async function run(argv = process.argv.slice(2)) {
   }
 
   try {
-    const client = createClient({ token: parsed.token });
-    await runCommand({ command, client, json: parsed.json });
+    const token = getRequiredToken({ token: parsed.token });
+    const client = createClient({ token });
+    await runCommand({ command, client, token, json: parsed.json });
     return 0;
   } catch (error) {
     if (error instanceof CliError) {

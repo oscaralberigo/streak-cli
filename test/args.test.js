@@ -15,3 +15,41 @@ test('resolveCommand parses search query', () => {
   assert.equal(cmd.type, 'search');
   assert.equal(cmd.query, 'big deal');
 });
+
+test('resolveCommand parses boxes meetings add', () => {
+  const cmd = resolveCommand([
+    'boxes',
+    'meetings',
+    'add',
+    'box123',
+    '--meeting-type',
+    'PHONE_CALL',
+    '--start',
+    '1700000000000',
+    '--duration',
+    '1800000',
+  ]);
+
+  assert.equal(cmd.type, 'boxes.meetings.add');
+  assert.equal(cmd.boxKey, 'box123');
+  assert.equal(cmd.meetingType, 'PHONE_CALL');
+  assert.equal(cmd.startTimestamp, 1700000000000);
+  assert.equal(cmd.duration, 1800000);
+});
+
+test('resolveCommand validates integer flags for boxes meetings add', () => {
+  assert.throws(
+    () => resolveCommand(['boxes', 'meetings', 'add', 'box123', '--meeting-type', 'PHONE_CALL', '--start', 'abc', '--duration', '1']),
+    /--start must be an integer/
+  );
+});
+
+test('resolveCommand parses meetings complete/delete', () => {
+  const complete = resolveCommand(['meetings', 'complete', 'meeting-1']);
+  assert.equal(complete.type, 'meetings.complete');
+  assert.equal(complete.meetingKey, 'meeting-1');
+
+  const del = resolveCommand(['meetings', 'delete', 'meeting-2']);
+  assert.equal(del.type, 'meetings.delete');
+  assert.equal(del.meetingKey, 'meeting-2');
+});
