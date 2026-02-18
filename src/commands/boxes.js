@@ -59,3 +59,24 @@ export async function runBoxesMeetingsList({ token, json, boxKey, apiRequest = s
 
   printTable(['meetingKey', 'type', 'start', 'duration', 'completed'], rows);
 }
+
+export async function runBoxesTasksList({ token, json, boxKey, apiRequest = streakApiRequest }) {
+  const tasks = await apiRequest({
+    token,
+    method: 'GET',
+    path: `/api/v2/boxes/${boxKey}/tasks`,
+  });
+
+  if (json) return printJson(tasks);
+
+  const rows = (tasks || []).map((t) => [
+    t.taskKey || t.key || '',
+    t.status || '',
+    t.text || '',
+    t.creatorKey || '',
+    t.dueDate || '',
+    (t.assignedToSharingEntries || []).map((a) => a.email || a.name || a.userKey || '').filter(Boolean).join(', '),
+  ]);
+
+  printTable(['taskKey', 'status', 'text', 'creatorKey', 'dueDate', 'assignedTo'], rows);
+}

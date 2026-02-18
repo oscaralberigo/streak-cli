@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { runBoxesMeetingsAdd, runBoxesMeetingsList } from '../src/commands/boxes.js';
+import { runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksList } from '../src/commands/boxes.js';
 import { runMeetingsComplete, runMeetingsDelete } from '../src/commands/meetings.js';
 
 test('runBoxesMeetingsAdd calls v2 endpoint with form fields', async () => {
@@ -46,6 +46,25 @@ test('runBoxesMeetingsList calls v2 endpoint', async () => {
     token: 'tok',
     method: 'GET',
     path: '/api/v2/boxes/box1/meetings',
+  });
+});
+
+test('runBoxesTasksList calls v2 endpoint', async () => {
+  let call;
+  await runBoxesTasksList({
+    token: 'tok',
+    json: true,
+    boxKey: 'box1',
+    apiRequest: async (params) => {
+      call = params;
+      return [];
+    },
+  });
+
+  assert.deepEqual(call, {
+    token: 'tok',
+    method: 'GET',
+    path: '/api/v2/boxes/box1/tasks',
   });
 });
 

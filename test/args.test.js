@@ -37,6 +37,12 @@ test('resolveCommand parses boxes meetings add', () => {
   assert.equal(cmd.duration, 1800000);
 });
 
+test('resolveCommand parses boxes tasks', () => {
+  const cmd = resolveCommand(['boxes', 'tasks', 'box123']);
+  assert.equal(cmd.type, 'boxes.tasks.list');
+  assert.equal(cmd.boxKey, 'box123');
+});
+
 test('resolveCommand validates integer flags for boxes meetings add', () => {
   assert.throws(
     () => resolveCommand(['boxes', 'meetings', 'add', 'box123', '--meeting-type', 'PHONE_CALL', '--start', 'abc', '--duration', '1']),

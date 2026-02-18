@@ -1,7 +1,7 @@
 import { CliError } from '../lib/errors.js';
 import { runMe } from './me.js';
 import { runPipelinesBoxes, runPipelinesList } from './pipelines.js';
-import { runBoxesComments, runBoxesGet, runBoxesMeetingsAdd, runBoxesMeetingsList } from './boxes.js';
+import { runBoxesComments, runBoxesGet, runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksList } from './boxes.js';
 import { runSearch } from './search.js';
 import { runMeetingsComplete, runMeetingsDelete } from './meetings.js';
 
@@ -56,6 +56,7 @@ Commands:
   pipelines boxes <pipelineKey>
   boxes get <boxKey>
   boxes comments <boxKey>
+  boxes tasks <boxKey>
   boxes meetings add <boxKey> --meeting-type <type> --start <ms> --duration <ms>
   boxes meetings list <boxKey>
   meetings complete <meetingKey>
@@ -93,6 +94,11 @@ export function resolveCommand(positionals) {
   if (root === 'boxes' && sub === 'comments') {
     if (!rest[0]) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'boxes.comments', boxKey: rest[0] };
+  }
+
+  if (root === 'boxes' && sub === 'tasks') {
+    if (!rest[0]) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
+    return { type: 'boxes.tasks.list', boxKey: rest[0] };
   }
 
   if (root === 'boxes' && sub === 'meetings') {
@@ -152,6 +158,8 @@ export async function runCommand({ command, client, token, json }) {
       return runBoxesGet({ client, json, boxKey: command.boxKey });
     case 'boxes.comments':
       return runBoxesComments({ client, json, boxKey: command.boxKey });
+    case 'boxes.tasks.list':
+      return runBoxesTasksList({ token, json, boxKey: command.boxKey });
     case 'boxes.meetings.add':
       return runBoxesMeetingsAdd({
         token,
