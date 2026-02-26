@@ -80,3 +80,34 @@ export async function runBoxesTasksList({ token, json, boxKey, apiRequest = stre
 
   printTable(['taskKey', 'status', 'text', 'creatorKey', 'dueDate', 'assignedTo'], rows);
 }
+
+export async function runBoxesTasksCreate({
+  token,
+  json,
+  boxKey,
+  text,
+  dueDate,
+  assignees,
+  apiRequest = streakApiRequest,
+}) {
+  const body = {
+    boxKey,
+    text,
+  };
+
+  if (dueDate !== undefined && dueDate !== null) body.dueDate = dueDate;
+  if (assignees && assignees.length > 0) {
+    body.assignedToSharingEntries = assignees.map((email) => ({ email }));
+  }
+
+  const task = await apiRequest({
+    token,
+    method: 'POST',
+    path: `/api/v2/boxes/${boxKey}/tasks`,
+    json: body,
+  });
+
+  if (json) return printJson(task);
+
+  console.log(`Created task ${task?.taskKey || ''} on box ${boxKey}`.trim());
+}

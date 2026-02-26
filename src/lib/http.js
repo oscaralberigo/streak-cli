@@ -1,4 +1,4 @@
-export async function streakApiRequest({ token, method = 'GET', path, form }) {
+export async function streakApiRequest({ token, method = 'GET', path, form, json }) {
   const baseUrl = 'https://api.streak.com';
   const normalizedPath = path.startsWith('/api/') ? path : `/api/v1/${path.replace(/^\/+/, '')}`;
   const url = `${baseUrl}${normalizedPath}`;
@@ -9,7 +9,10 @@ export async function streakApiRequest({ token, method = 'GET', path, form }) {
   };
 
   let body;
-  if (form) {
+  if (json !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify(json);
+  } else if (form) {
     headers['Content-Type'] = 'application/x-www-form-urlencoded';
     body = new URLSearchParams(
       Object.entries(form).reduce((acc, [key, value]) => {

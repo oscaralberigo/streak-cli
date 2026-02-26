@@ -1,7 +1,7 @@
 import { CliError } from '../lib/errors.js';
 import { runMe } from './me.js';
 import { runPipelinesBoxes, runPipelinesList } from './pipelines.js';
-import { runBoxesComments, runBoxesGet, runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksList } from './boxes.js';
+import { runBoxesComments, runBoxesGet, runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksCreate, runBoxesTasksList } from './boxes.js';
 import { runSearch } from './search.js';
 import { runMeetingsComplete, runMeetingsDelete } from './meetings.js';
 
@@ -57,6 +57,7 @@ Commands:
   boxes get <boxKey>
   boxes comments <boxKey>
   boxes tasks <boxKey>
+  boxes tasks add <boxKey> --text <task> [--due-date <ms>] [--assignee <email> --assignee <email> ...]
   boxes meetings add <boxKey> --meeting-type <type> --start <ms> --duration <ms>
   boxes meetings list <boxKey>
   meetings complete <meetingKey>
@@ -97,8 +98,41 @@ export function resolveCommand(positionals) {
   }
 
   if (root === 'boxes' && sub === 'tasks') {
-    if (!rest[0]) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'boxes.tasks.list', boxKey: rest[0] };
+    const [actionOrBoxKey, maybeBoxKey, ...args] = rest;
+
+    if (actionOrBoxKey === 'add') {
+      if (!maybeBoxKey) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
+      const flags = parseFlags(args);
+      const text = flags.text;
+      if (!text || text === true) {
+        throw new CliError('Missing required flag: --text <task>', { code: 'ARG_ERROR', exitCode: 2 });
+      }
+
+      const assignees = [];
+      for (let i = 0; i < args.length; i += 1) {
+        if (args[i] === '--assignee') {
+          const value = args[i + 1];
+          if (!value || value.startsWith('--')) {
+            throw new CliError('Missing value for --assignee <email>', { code: 'ARG_ERROR', exitCode: 2 });
+          }
+          assignees.push(value);
+          i += 1;
+        }
+      }
+
+      const dueDate = flags['due-date'] !== undefined ? parseRequiredIntFlag(flags, 'due-date') : undefined;
+
+      return {
+        type: 'boxes.tasks.add',
+        boxKey: maybeBoxKey,
+        text: String(text),
+        dueDate,
+        assignees,
+      };
+    }
+
+    if (!actionOrBoxKey) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
+    return { type: 'boxes.tasks.list', boxKey: actionOrBoxKey };
   }
 
   if (root === 'boxes' && sub === 'meetings') {
@@ -160,6 +194,15 @@ export async function runCommand({ command, client, token, json }) {
       return runBoxesComments({ client, json, boxKey: command.boxKey });
     case 'boxes.tasks.list':
       return runBoxesTasksList({ token, json, boxKey: command.boxKey });
+    case 'boxes.tasks.add':
+      return runBoxesTasksCreate({
+        token,
+        json,
+        boxKey: command.boxKey,
+        text: command.text,
+        dueDate: command.dueDate,
+        assignees: command.assignees,
+      });
     case 'boxes.meetings.add':
       return runBoxesMeetingsAdd({
         token,
