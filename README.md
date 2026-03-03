@@ -1,5 +1,9 @@
 # streak-cli
 
+This repo is the source code for Logan Sinclair's local Streak command-line tool.
+
+It provides the `streak` CLI (and local alias `streak-cli`) used by Oscar/OpenClaw workflows to query and update Streak CRM data from terminal/automation.
+
 A Node.js CLI wrapper around the official-ish Streak SDK package [`streakapi`](https://www.npmjs.com/package/streakapi), based on the [StreakYC/node-api-wrapper](https://github.com/StreakYC/node-api-wrapper).
 
 > This project primarily uses the SDK, with minimal direct HTTP calls for endpoints not currently exposed by `streakapi` (e.g. meetings).
@@ -16,6 +20,13 @@ npm run start -- --help
 ```bash
 npm link
 streak --help
+```
+
+If you want a `streak-cli` command as well, create a symlink to the linked binary:
+
+```bash
+ln -sf "$(command -v streak)" "$(dirname "$(command -v streak)")/streak-cli"
+streak-cli --help
 ```
 
 ## Authentication
