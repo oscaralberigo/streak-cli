@@ -23,6 +23,20 @@ export async function runBoxesComments({ client, json, boxKey }) {
   printTable(['commentKey', 'author', 'text'], rows);
 }
 
+export async function runBoxesCommentsAdd({ token, json, boxKey, message, apiRequest = streakApiRequest }) {
+  const comment = await apiRequest({
+    token,
+    method: 'POST',
+    path: `/api/v2/boxes/${boxKey}/comments`,
+    json: { message },
+  });
+
+  if (json) return printJson(comment);
+
+  const commentKey = comment?.commentKey || comment?.key || '';
+  console.log(`Created comment ${commentKey} on box ${boxKey}`.trim());
+}
+
 export async function runBoxesMeetingsAdd({ token, json, boxKey, meetingType, startTimestamp, duration, apiRequest = streakApiRequest }) {
   const meeting = await apiRequest({
     token,
@@ -110,4 +124,72 @@ export async function runBoxesTasksCreate({
   if (json) return printJson(task);
 
   console.log(`Created task ${task?.taskKey || ''} on box ${boxKey}`.trim());
+}
+
+export async function runBoxesListInPipeline({ token, json, pipelineKey, apiRequest = streakApiRequest }) {
+  const boxes = await apiRequest({ token, method: 'GET', path: `/api/v1/pipelines/${pipelineKey}/boxes` });
+  if (json) return printJson(boxes);
+  const rows = (boxes || []).map((b) => [b.boxKey || b.key || '', b.name || '', b.stageKey || '']);
+  printTable(['boxKey', 'name', 'stageKey'], rows);
+}
+
+export async function runBoxesCreate({ token, json, pipelineKey, body, apiRequest = streakApiRequest }) {
+  const box = await apiRequest({ token, method: 'POST', path: `/api/v2/pipelines/${pipelineKey}/boxes`, json: body });
+  if (json) return printJson(box);
+  console.log(`Created box ${box?.boxKey || box?.key || ''}`.trim());
+}
+
+export async function runBoxesUpdate({ token, json, boxKey, body, apiRequest = streakApiRequest }) {
+  const box = await apiRequest({ token, method: 'POST', path: `/api/v1/boxes/${boxKey}`, json: body });
+  if (json) return printJson(box);
+  console.log(`Updated box ${boxKey}`);
+}
+
+export async function runBoxesDelete({ token, json, boxKey, apiRequest = streakApiRequest }) {
+  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/boxes/${boxKey}` });
+  if (json) return printJson(result ?? { deleted: true, boxKey });
+  console.log(`Deleted box ${boxKey}`);
+}
+
+export async function runBoxesTimeline({ token, json, boxKey, apiRequest = streakApiRequest }) {
+  const items = await apiRequest({ token, method: 'GET', path: `/api/v1/boxes/${boxKey}/timeline` });
+  if (json) return printJson(items);
+  const rows = (items || []).slice(0, 50).map((i) => [i.timestamp || i.time || '', i.type || i.eventType || '', i.key || i.id || '']);
+  printTable(['timestamp', 'type', 'key'], rows);
+}
+
+export async function runCommentsGet({ token, json, commentKey, apiRequest = streakApiRequest }) {
+  const comment = await apiRequest({ token, method: 'GET', path: `/api/v1/comments/${commentKey}` });
+  if (json) return printJson(comment);
+  printKeyValue(comment, ['commentKey', 'boxKey', 'message', 'timestamp']);
+}
+
+export async function runCommentsUpdate({ token, json, commentKey, message, apiRequest = streakApiRequest }) {
+  const comment = await apiRequest({ token, method: 'POST', path: `/api/v1/comments/${commentKey}`, json: { message } });
+  if (json) return printJson(comment);
+  console.log(`Updated comment ${commentKey}`);
+}
+
+export async function runCommentsDelete({ token, json, commentKey, apiRequest = streakApiRequest }) {
+  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/comments/${commentKey}` });
+  if (json) return printJson(result ?? { deleted: true, commentKey });
+  console.log(`Deleted comment ${commentKey}`);
+}
+
+export async function runTasksGet({ token, json, taskKey, apiRequest = streakApiRequest }) {
+  const task = await apiRequest({ token, method: 'GET', path: `/api/v1/tasks/${taskKey}` });
+  if (json) return printJson(task);
+  printKeyValue(task, ['taskKey', 'boxKey', 'status', 'text', 'dueDate']);
+}
+
+export async function runTasksUpdate({ token, json, taskKey, body, apiRequest = streakApiRequest }) {
+  const task = await apiRequest({ token, method: 'POST', path: `/api/v1/tasks/${taskKey}`, json: body });
+  if (json) return printJson(task);
+  console.log(`Updated task ${taskKey}`);
+}
+
+export async function runTasksDelete({ token, json, taskKey, apiRequest = streakApiRequest }) {
+  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/tasks/${taskKey}` });
+  if (json) return printJson(result ?? { deleted: true, taskKey });
+  console.log(`Deleted task ${taskKey}`);
 }

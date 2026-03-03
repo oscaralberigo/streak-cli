@@ -1,0 +1,527 @@
+# Streak API Reference
+# Source: https://streak.readme.io/reference
+# Base URL: https://api.streak.com
+# Authentication: HTTP Basic Auth — API key as username, empty password
+# Rate limit: No hard limit; recommended max 10 requests/second
+
+---
+
+## OVERVIEW
+
+The Streak API powers most functions a user can perform in Streak — creating boxes, pipelines, snippets, etc. Anything you can do in Streak can be done via the API. Exception: Gmail-connected functions (email tracking, mail merge) are unavailable.
+
+---
+
+## USERS
+
+### Get Current User
+GET https://api.streak.com/api/v1/users/me
+Each Streak user has a corresponding user object. User objects cannot be altered through the API. Each API key only has privileges to access its own user object.
+Docs: https://streak.readme.io/reference/get-current-user
+
+### Get User
+GET https://api.streak.com/api/v1/users/{userKey}
+Returns the public details for the user specified.
+Docs: https://streak.readme.io/reference/get-user
+
+---
+
+## TEAMS
+
+### Get My Teams
+GET https://api.streak.com/api/v2/teams
+Get all teams the current user is a member of.
+Docs: https://streak.readme.io/reference/get-teams
+
+### Get a Team
+GET https://api.streak.com/api/v2/teams/{teamKey}
+Get a specific team by its key. The requesting user must have access to the team.
+Docs: https://streak.readme.io/reference/get-team
+
+---
+
+## PIPELINES
+
+Pipelines are a core data object representing a business process (Sales, Hiring, Bug Tracking, etc.). A pipeline defines the schema for its boxes: the set of stages and custom fields. Can be shared to users or an entire organization (orgWide=true shares to same Google Apps domain). aclEntries specifies individual user permission exceptions. The stages and fields properties are embedded in the pipeline object for convenience but must be modified via dedicated endpoints.
+
+### List All Pipelines
+GET https://api.streak.com/api/v1/pipelines
+Returns all pipelines accessible to the authenticated user.
+Docs: https://streak.readme.io/reference/list-all-pipelines
+
+### Get a Pipeline
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}
+Returns a single pipeline by key.
+Docs: https://streak.readme.io/reference/getting-a-specific-pipeline
+
+### Create a Pipeline
+PUT https://api.streak.com/api/v1/pipelines
+Send url-encoded requests. Provide authorization.
+Docs: https://streak.readme.io/reference/create-a-pipeline
+
+### Update a Pipeline
+POST https://api.streak.com/api/v1/pipelines/{pipelineKey}
+Edit the properties of a pipeline. To change fields or stages, use dedicated Fields/Stages endpoints. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/edit-a-pipeline
+
+### Delete a Pipeline
+DELETE https://api.streak.com/api/v1/pipelines/{pipelineKey}
+Delete a pipeline. Only empty pipelines (no boxes) can be deleted.
+Docs: https://streak.readme.io/reference/delete-a-pipeline
+
+### Move Boxes to a Different Pipeline (Batch)
+POST https://api.streak.com/api/v2/pipelines/{pipelineKey}/boxes/batch
+Batch move boxes to a different pipeline. Body must be a raw JSON array (no wrapper key): [{"key":"boxKey1","boxKey":"boxKey1","pipelineKey":"newPipelineKey"},...]. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/batch-move-boxes-to-a-different-pipeline
+
+---
+
+## BOXES
+
+Boxes are the rows within a pipeline. Each box has custom field values, a stage, and associated emails, tasks, comments, files, and meetings.
+
+### List All Boxes in Pipeline
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/boxes
+Get all boxes in a pipeline. Supports limit and page query params.
+Docs: https://streak.readme.io/reference/list-all-boxes-in-pipeline
+
+### Get a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}
+Get a specific box by key. Response includes a contacts array of associated contacts.
+Docs: https://streak.readme.io/reference/get-a-box
+
+### Get Multiple Boxes
+POST https://api.streak.com/api/v1/boxes
+Batch get boxes from a pipeline.
+Docs: https://streak.readme.io/reference/get-multiple-boxes
+
+### Create a Box
+POST https://api.streak.com/api/v2/pipelines/{pipelineKey}/boxes
+Create a box in the specified pipeline. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/create-a-box
+
+### Update a Box
+POST https://api.streak.com/api/v1/boxes/{boxKey}
+Edit box properties (name, notes, stageKey, assignees, etc.). To update field values, use the Update Field Value endpoint. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/edit-a-box
+
+### Delete a Box
+DELETE https://api.streak.com/api/v1/boxes/{boxKey}
+Delete a box and all its associated data (files, emails, tasks).
+Docs: https://streak.readme.io/reference/delete-a-box
+
+### Get Timeline for a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/timeline
+Returns the chronological timeline of events for a specific box.
+Docs: https://streak.readme.io/reference/get-timeline-for-a-box
+
+---
+
+## STAGES
+
+Stages are the possible states a box can be in, defined per pipeline. All boxes in a pipeline share the same stages. To change a box's stage, update stageKey via the Update Box endpoint.
+
+### List All Stages in Pipeline
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/stages
+Lists stage definitions in a pipeline.
+Docs: https://streak.readme.io/reference/list-all-stages-in-pipeline
+
+### Get a Stage
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/stages/{stageKey}
+Get a specific stage definition from a pipeline.
+Docs: https://streak.readme.io/reference/get-a-stage
+
+### Create a Stage
+PUT https://api.streak.com/api/v1/pipelines/{pipelineKey}/stages
+Create a new stage in a pipeline.
+Docs: https://streak.readme.io/reference/create-a-stage
+
+### Update a Stage
+POST https://api.streak.com/api/v1/pipelines/{pipelineKey}/stages/{stageKey}
+Edit the name of a stage.
+Docs: https://streak.readme.io/reference/update-a-stage
+
+### Delete a Stage
+DELETE https://api.streak.com/api/v1/pipelines/{pipelineKey}/stages/{stageKey}
+Delete a stage from a pipeline.
+Docs: https://streak.readme.io/reference/delete-a-stage
+
+---
+
+## FIELDS
+
+Fields are user-defined metadata on boxes, appearing as columns in the pipeline view. Defined per pipeline; all boxes share the same schema. Field types: TEXT_INPUT, DATE, TAG, FORMULA, DROPDOWN, CHECKBOX, TEAM_CONTACT.
+
+### List All Fields in a Pipeline
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/fields
+Lists field definitions in a pipeline.
+Docs: https://streak.readme.io/reference/list-all-fields-in-a-pipeline
+
+### Get a Field
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/fields/{fieldKey}
+Get a specific field definition.
+Docs: https://streak.readme.io/reference/get-a-field
+
+### Create a Field
+PUT https://api.streak.com/api/v1/pipelines/{pipelineKey}/fields
+Create a new field in a pipeline.
+Docs: https://streak.readme.io/reference/create-a-field
+
+### Update a Field
+POST https://api.streak.com/api/v1/pipelines/{pipelineKey}/fields/{fieldKey}
+Edit a field definition. Use ?addOnly=true to append options.
+Tag options: {"tagSettings":{"tags":[{"tag":"Option1"}]}}
+Dropdown options: {"dropdownSettings":{"items":[{"name":"Option1"}]}}
+Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-a-field
+
+### Delete a Field
+DELETE https://api.streak.com/api/v1/pipelines/{pipelineKey}/fields/{fieldKey}
+Delete a field. Also removes all values of this field for every box in the pipeline.
+Docs: https://streak.readme.io/reference/delete-a-field
+
+### List Field Values for a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/fields
+List all field values for a specific box.
+Docs: https://streak.readme.io/reference/list-field-values-for-a-box
+
+### Get a Field Value
+GET https://api.streak.com/api/v1/boxes/{boxKey}/fields/{fieldKey}
+Get a specific field value for a box.
+Docs: https://streak.readme.io/reference/get-a-field-value-for-a-box
+
+### Update Field Value
+POST https://api.streak.com/api/v1/boxes/{boxKey}/fields/{fieldKey}
+Update the value of a field for a box. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-field-value-for-a-box
+
+---
+
+## CONTACTS
+
+Contacts represent people associated with boxes. All contacts are scoped to a team. Must have at least one of name or emailAddresses.
+
+### Get a Contact
+GET https://api.streak.com/api/v1/contacts/{contactKey}
+Get a contact by its key.
+Docs: https://streak.readme.io/reference/read-a-contact-1
+
+### Create a Contact
+POST https://api.streak.com/api/v2/teams/{teamKey}/contacts/
+Create a contact scoped to a team. If getIfExisting is included, only emailAddresses can be passed. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/create-a-contact
+
+### Update a Contact
+POST https://api.streak.com/api/v1/contacts/{contactKey}
+Updatable: givenName, familyName, title, other, twitterHandle, facebookHandle, linkedinHandle, photoUrl, addresses[], phoneNumbers[], emailAddresses[]. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-a-contact-1
+
+### Delete a Contact
+DELETE https://api.streak.com/api/v1/contacts/{contactKey}
+Delete a contact by its key.
+Docs: https://streak.readme.io/reference/delete-a-contact
+
+### Contacts FAQ
+Get contacts from a box: GET /api/v1/boxes/{boxKey} and read the contacts array.
+Search contacts by email: GET /api/v1/search?query=email@example.com — filter the contacts array.
+Docs: https://streak.readme.io/reference/contacts-frequently-asked-questions
+
+### List All Contact Fields
+GET https://api.streak.com/api/v1/teams/{teamKey}/contactfields
+List all custom fields defined for contacts in a team.
+Docs: https://streak.readme.io/reference/list-all-contact-fields
+
+### Update Contact Field Value
+POST https://api.streak.com/api/v1/contacts/{contactKey}/fields/{fieldKey}
+Update a custom field value for a contact. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-contact-field-value
+
+---
+
+## ORGANIZATIONS
+
+Organizations represent companies associated with boxes. All organizations are scoped to a team.
+
+### Get an Organization
+GET https://api.streak.com/api/v1/organizations/{organizationKey}
+Read an organization by its key.
+Docs: https://streak.readme.io/reference/get-an-organization
+
+### Check for Existing Organizations / Create an Organization
+POST https://api.streak.com/api/v2/teams/{teamKey}/organizations/
+Create a new organization. Must have at least one of name or domains. Use getIfExisting to return existing org by domain instead of creating a duplicate. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/create-an-organization
+
+### Update an Organization
+POST https://api.streak.com/api/v1/organizations/{organizationKey}
+Update an organization by its key. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-an-organization
+
+### Delete an Organization
+DELETE https://api.streak.com/api/v1/organizations/{organizationKey}
+Delete an organization by its key.
+Docs: https://streak.readme.io/reference/delete-an-organization
+
+### List All Organization Fields
+GET https://api.streak.com/api/v1/teams/{teamKey}/organizationfields
+List all custom fields defined for organizations in a team.
+Docs: https://streak.readme.io/reference/list-all-organization-fields
+
+### Update Organization Field Value
+POST https://api.streak.com/api/v1/organizations/{organizationKey}/fields/{fieldKey}
+Update a custom field value for an organization. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-organization-field-value
+
+---
+
+## SEARCH
+
+### Search Boxes, Contacts, and Organizations
+GET https://api.streak.com/api/v1/search?query={query}
+Relevance-sorted search across: box name, notes, emails, text formula fields, freeform text fields. Results contain separate arrays for orgs, boxes, and contacts. Optional: pipelineKey (repeatable), stageKey (repeatable).
+Example: GET /api/v1/search?query=acme&pipelineKey=abc&stageKey=5003
+Docs: https://streak.readme.io/reference/searching-for-boxes-contacts-and-organizations
+
+### Search for a Box by Name
+GET https://api.streak.com/api/v1/search?name={name}
+Exact match search for boxes by name.
+Docs: https://streak.readme.io/reference/searchng-for-boxes-by-name
+
+---
+
+## TASKS
+
+Tasks create a to-do list per box. All tasks have a text property. Optionally assigned to a pipeline member with an optional due date (syncs to Google Calendar, sends email reminder).
+
+### Get a Task
+GET https://api.streak.com/api/v1/tasks/{taskKey}
+Docs: https://streak.readme.io/reference/read-a-task
+
+### Get Tasks in a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/tasks
+Get all tasks associated with a box.
+Docs: https://streak.readme.io/reference/read-tasks-on-a-box
+
+### Create a Task
+POST https://api.streak.com/api/v1/boxes/{boxKey}/tasks
+Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/create-a-task
+
+### Update a Task
+POST https://api.streak.com/api/v1/tasks/{taskKey}
+Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-a-task
+
+### Delete a Task
+DELETE https://api.streak.com/api/v1/tasks/{taskKey}
+Docs: https://streak.readme.io/reference/delete-a-task
+
+---
+
+## WEBHOOKS
+
+Webhooks POST an object to a target URL when events occur. Updated objects are wrapped in an array. HTTP 410 from target causes auto-deletion. Non-200/410 responses trigger retry with backoff. Two types: pipeline-based (boxes, comments, call logs) and team-based (contacts, organizations). Admins see all webhooks; non-Admins see only their own.
+
+### Create a Webhook
+POST https://api.streak.com/api/v2/webhooks
+Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/create-a-webhook
+
+### Update a Webhook
+POST https://api.streak.com/api/v2/webhooks/{webhookKey}
+Only event and targetUrl are allowed. Cannot switch between pipeline-based and team-based. Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-a-webhook
+
+### Delete a Webhook
+DELETE https://api.streak.com/api/v2/webhooks/{webhookKey}
+Docs: https://streak.readme.io/reference/delete-a-webhook
+
+### Get All Pipeline-Based Webhooks
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/webhooks
+Admins see all; non-Admins see only their own.
+Docs: https://streak.readme.io/reference/get-all-webhooks-by-pipeline
+
+### Get All Team-Based Webhooks
+GET https://api.streak.com/api/v2/teams/{key}/webhooks
+Contacts and organizations scope.
+Docs: https://streak.readme.io/reference/get-all-webhooks-by-team
+
+### Get a Webhook by Key
+GET https://api.streak.com/api/v2/webhooks/{key}
+Docs: https://streak.readme.io/reference/get-a-webhook-by-key
+
+---
+
+## FILES
+
+Files are attachments associated with boxes, typically Gmail email attachments. Binary content only available for GMAIL_API type files.
+
+### Get Files in a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/files
+Docs: https://streak.readme.io/reference/get-files-for-box
+
+### Get Specific File
+GET https://api.streak.com/api/v1/files/{fileKey}
+Docs: https://streak.readme.io/reference/get-specific-file
+
+### Get File Contents
+GET https://api.streak.com/api/v1/files/{fileKey}/contents
+Binary contents. Response mime type matches file type. GMAIL_API type only.
+Docs: https://streak.readme.io/reference/get-file-contents
+
+### Add File(s) to Box
+POST https://api.streak.com/api/v1/boxes/{boxKey}/files
+Docs: https://streak.readme.io/reference/add-files
+
+---
+
+## THREADS
+
+Streak associates Gmail threads with each box in a pipeline.
+
+### Put an Email in a Box
+PUT https://api.streak.com/api/v1/boxes/{boxKey}/threads/{threadKey}
+Associate a Gmail thread with a box.
+Docs: https://streak.readme.io/reference/put-an-email-in-a-box
+
+### Get Threads in a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/threads
+Docs: https://streak.readme.io/reference/get-threads-in-a-box
+
+### Get a Specific Thread
+GET https://api.streak.com/api/v1/threads/{key}
+Docs: https://streak.readme.io/reference/get-a-specific-thread
+
+### Remove a Thread
+DELETE https://api.streak.com/api/v1/threads/{key}
+Disassociates thread from box (does not delete the Gmail email).
+Docs: https://streak.readme.io/reference/remove-a-thread
+
+---
+
+## COMMENTS
+
+Each box can have 0 or more comments. Any user with pipeline access can create a comment.
+
+### Get a Comment
+GET https://api.streak.com/api/v1/comments/{commentKey}
+Docs: https://streak.readme.io/reference/get-a-comment
+
+### Create a Comment
+POST https://api.streak.com/api/v1/boxes/{boxKey}/comments
+Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/create-a-comment
+
+### Update a Comment
+POST https://api.streak.com/api/v1/comments/{commentKey}
+Requires Content-Type: application/json.
+Docs: https://streak.readme.io/reference/update-a-comment
+
+### Delete a Comment
+DELETE https://api.streak.com/api/v1/comments/{commentKey}
+Docs: https://streak.readme.io/reference/delete-a-comment
+
+### Get All Comments in a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/comments
+Docs: https://streak.readme.io/reference/get-all-comments
+
+---
+
+## MEETINGS (Meeting Notes and Call Logs)
+
+Each box can have 0 or more meeting/call log records. Any user with pipeline access can create a meeting.
+
+### Get All Meetings in a Box
+GET https://api.streak.com/api/v1/boxes/{boxKey}/meetings
+Docs: https://streak.readme.io/reference/get-meetings-in-a-box
+
+### Create a New Meeting
+POST https://api.streak.com/api/v1/boxes/{boxKey}/meetings
+Requires Content-Type: application/x-www-form-urlencoded.
+Docs: https://streak.readme.io/reference/create-a-new-meeting
+
+### Update a Meeting
+POST https://api.streak.com/api/v1/meetings/{meetingKey}
+Requires Content-Type: application/x-www-form-urlencoded.
+Docs: https://streak.readme.io/reference/update-a-meeting
+
+### Delete a Meeting
+DELETE https://api.streak.com/api/v1/meetings/{meetingKey}
+Docs: https://streak.readme.io/reference/delete-a-meeting
+
+---
+
+## SNIPPETS
+
+Snippets are saved text fragments insertable into emails. Can be private or shared with a pipeline.
+
+### Create a Snippet
+PUT https://api.streak.com/api/v1/snippets
+Include pipelineKey in body to share with a pipeline. Requires Content-Type: application/x-www-form-urlencoded.
+Docs: https://streak.readme.io/reference/create-a-snippet
+
+### Update a Snippet
+POST https://api.streak.com/api/v1/snippets/{snippetKey}
+Requires Content-Type: application/x-www-form-urlencoded.
+Docs: https://streak.readme.io/reference/update-a-snippet
+
+### Get All Snippets
+GET https://api.streak.com/api/v1/snippets
+Get all snippets for the authenticated user.
+Docs: https://streak.readme.io/reference/get-all-snippets
+
+### Get a Snippet
+GET https://api.streak.com/api/v1/snippets/{snippetKey}
+Docs: https://streak.readme.io/reference/get-a-specific-snippet
+
+### Delete a Snippet
+DELETE https://api.streak.com/api/v1/snippets/{snippetKey}
+Docs: https://streak.readme.io/reference/delete-a-snippet
+
+---
+
+## NEWSFEED
+
+Chronological event feed of changes. All newsfeed endpoints limited to 50 most recent events.
+
+### Newsfeed for Pipelines
+GET https://api.streak.com/api/v1/pipelines/{pipelineKey}/newsfeed
+Returns historical changes for a pipeline AND all boxes within it.
+Docs: https://streak.readme.io/reference/newsfeed-for-pipelines
+
+### Newsfeed for Boxes
+GET https://api.streak.com/api/v1/boxes/{boxKey}/newsfeed
+Returns the event history for a specific box.
+Docs: https://streak.readme.io/reference/newsfeed-for-boxes
+
+### Newsfeed for All Pipelines
+GET https://api.streak.com/api/v1/newsfeed
+Returns the newsfeed across all pipelines accessible to the authenticated user.
+Docs: https://streak.readme.io/reference/newsfeed-for-all-pipelines
+
+---
+
+## AUTHENTICATION
+
+HTTP Basic Auth. API key as username, empty password.
+curl example: curl https://api.streak.com/api/v1/users/me -u YOUR_API_KEY:
+To get API key: Gmail > Streak sidebar icon > Integrations > Streak API > Create New Key.
+
+---
+
+## API VERSIONING
+
+v1: Most endpoints
+v2: Boxes (create), webhooks, teams, contacts (create), organizations (create)
+
+---
+
+## GENERAL NOTES
+
+- Stages and fields are read-only in the pipeline object; use dedicated endpoints to modify them.
+- Contacts and organizations are always scoped to a team; teamKey required for creation.
+- File binary content retrieval only available for GMAIL_API type files.
+- Removing a thread disassociates it from the box but does not delete the Gmail email.
+- Webhook HTTP 410 response from target causes auto-deletion; non-200 triggers retry with backoff.
+- Search simultaneously covers boxes, contacts, and orgs by name, notes, emails, and text fields.
+- Batch pipeline move: JSON body must be a raw array, not wrapped in an object key.
