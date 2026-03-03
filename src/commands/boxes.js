@@ -17,7 +17,7 @@ export async function runBoxesComments({ client, json, boxKey }) {
   const rows = (comments || []).map((c) => [
     c.commentKey || c.key,
     c.author?.name || c.user?.name || '',
-    (c.text || '').replace(/\s+/g, ' ').slice(0, 90),
+    (c.message || c.text || '').replace(/\s+/g, ' ').slice(0, 90),
   ]);
 
   printTable(['commentKey', 'author', 'text'], rows);
@@ -152,10 +152,15 @@ export async function runBoxesDelete({ token, json, boxKey, apiRequest = streakA
 }
 
 export async function runBoxesTimeline({ token, json, boxKey, apiRequest = streakApiRequest }) {
-  const items = await apiRequest({ token, method: 'GET', path: `/api/v1/boxes/${boxKey}/timeline` });
+  // Streak exposes box activity as "newsfeed" (not /timeline).
+  const items = await apiRequest({ token, method: 'GET', path: `/api/v1/boxes/${boxKey}/newsfeed` });
   if (json) return printJson(items);
-  const rows = (items || []).slice(0, 50).map((i) => [i.timestamp || i.time || '', i.type || i.eventType || '', i.key || i.id || '']);
-  printTable(['timestamp', 'type', 'key'], rows);
+  const rows = (items || []).slice(0, 50).map((i) => [
+    i.timestamp || i.time || '',
+    i.newsfeedEntrySpecific || i.newsfeedEntryOperation || i.eventType || i.type || '',
+    i.newsfeedEntryKey || i.key || i.id || '',
+  ]);
+  printTable(['timestamp', 'event', 'key'], rows);
 }
 
 export async function runCommentsGet({ token, json, commentKey, apiRequest = streakApiRequest }) {
