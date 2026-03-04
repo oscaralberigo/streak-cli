@@ -55,7 +55,6 @@ streak --token your_api_key_here me
 - `streak boxes meetings add <boxKey> --meeting-type <type> --start <ms> --duration <ms>`
 - `streak boxes meetings list <boxKey>`
 - `streak meetings complete <meetingKey>`
-- `streak meetings delete <meetingKey>`
 - `streak search <query>`
 
 Global flags:
@@ -76,7 +75,6 @@ streak boxes tasks add agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx --text "Test MCP defau
 streak boxes meetings add agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx --meeting-type PHONE_CALL --start 1739443200000 --duration 1800000
 streak boxes meetings list agxzfm15c3RyZWFrchMLEgNCb3gY8fABCx
 streak meetings complete agxzfm15c3RyZWFrchMLEgdNZWV0aW5nGJkBDA
-streak meetings delete agxzfm15c3RyZWFrchMLEgdNZWV0aW5nGJkBDA
 streak search "acme renewal"
 ```
 

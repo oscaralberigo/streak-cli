@@ -50,12 +50,8 @@ test('resolveCommand validates integer flags for boxes meetings add', () => {
   );
 });
 
-test('resolveCommand parses meetings complete/delete', () => {
+test('resolveCommand parses meetings complete', () => {
   const complete = resolveCommand(['meetings', 'complete', 'meeting-1']);
   assert.equal(complete.type, 'meetings.complete');
   assert.equal(complete.meetingKey, 'meeting-1');
-
-  const del = resolveCommand(['meetings', 'delete', 'meeting-2']);
-  assert.equal(del.type, 'meetings.delete');
-  assert.equal(del.meetingKey, 'meeting-2');
 });

@@ -26,12 +26,6 @@ export async function runStagesUpdate({ token, json, pipelineKey, stageKey, name
   console.log(`Updated stage ${stageKey}`);
 }
 
-export async function runStagesDelete({ token, json, pipelineKey, stageKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/pipelines/${pipelineKey}/stages/${stageKey}` });
-  if (json) return printJson(result ?? { deleted: true, stageKey });
-  console.log(`Deleted stage ${stageKey}`);
-}
-
 export async function runFieldsList({ token, json, pipelineKey, apiRequest = streakApiRequest }) {
   const fields = await apiRequest({ token, method: 'GET', path: `/api/v1/pipelines/${pipelineKey}/fields` });
   if (json) return printJson(fields);
@@ -55,12 +49,6 @@ export async function runFieldsUpdate({ token, json, pipelineKey, fieldKey, body
   const field = await apiRequest({ token, method: 'POST', path: `/api/v1/pipelines/${pipelineKey}/fields/${fieldKey}`, json: body });
   if (json) return printJson(field);
   console.log(`Updated field ${fieldKey}`);
-}
-
-export async function runFieldsDelete({ token, json, pipelineKey, fieldKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/pipelines/${pipelineKey}/fields/${fieldKey}` });
-  if (json) return printJson(result ?? { deleted: true, fieldKey });
-  console.log(`Deleted field ${fieldKey}`);
 }
 
 export async function runBoxFieldValuesList({ token, json, boxKey, apiRequest = streakApiRequest }) {
@@ -98,12 +86,6 @@ export async function runWebhooksUpdate({ token, json, webhookKey, body, apiRequ
   const webhook = await apiRequest({ token, method: 'POST', path: `/api/v2/webhooks/${webhookKey}`, json: body });
   if (json) return printJson(webhook);
   console.log(`Updated webhook ${webhookKey}`);
-}
-
-export async function runWebhooksDelete({ token, json, webhookKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v2/webhooks/${webhookKey}` });
-  if (json) return printJson(result ?? { deleted: true, webhookKey });
-  console.log(`Deleted webhook ${webhookKey}`);
 }
 
 export async function runWebhooksListPipeline({ token, json, pipelineKey, apiRequest = streakApiRequest }) {

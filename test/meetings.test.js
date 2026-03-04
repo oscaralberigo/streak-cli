@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksList } from '../src/commands/boxes.js';
-import { runMeetingsComplete, runMeetingsDelete } from '../src/commands/meetings.js';
+import { runMeetingsComplete } from '../src/commands/meetings.js';
 
 test('runBoxesMeetingsAdd calls v2 endpoint with form fields', async () => {
   let call;
@@ -68,31 +68,18 @@ test('runBoxesTasksList calls v2 endpoint', async () => {
   });
 });
 
-test('runMeetingsComplete/delete call expected endpoints', async () => {
-  const calls = [];
+test('runMeetingsComplete calls expected endpoint', async () => {
+  let call;
 
   await runMeetingsComplete({
     token: 'tok',
     json: true,
     meetingKey: 'm1',
     apiRequest: async (params) => {
-      calls.push(params);
+      call = params;
       return {};
     },
   });
 
-  await runMeetingsDelete({
-    token: 'tok',
-    json: true,
-    meetingKey: 'm1',
-    apiRequest: async (params) => {
-      calls.push(params);
-      return {};
-    },
-  });
-
-  assert.deepEqual(calls, [
-    { token: 'tok', method: 'POST', path: '/api/v2/meetings/m1' },
-    { token: 'tok', method: 'DELETE', path: '/api/v2/meetings/m1' },
-  ]);
+  assert.deepEqual(call, { token: 'tok', method: 'POST', path: '/api/v2/meetings/m1' });
 });

@@ -28,12 +28,6 @@ export async function runPipelinesUpdate({ token, json, pipelineKey, body, apiRe
   console.log(`Updated pipeline ${pipelineKey}`);
 }
 
-export async function runPipelinesDelete({ token, json, pipelineKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/pipelines/${pipelineKey}` });
-  if (json) return printJson(result ?? { deleted: true, pipelineKey });
-  console.log(`Deleted pipeline ${pipelineKey}`);
-}
-
 export async function runPipelinesBoxes({ client, json, pipelineKey }) {
   const boxes = await client.Pipelines.getBoxes(pipelineKey);
 

@@ -1,11 +1,11 @@
 import { CliError } from '../lib/errors.js';
 import { runMe } from './me.js';
-import { runPipelinesBoxes, runPipelinesCreate, runPipelinesDelete, runPipelinesGet, runPipelinesList, runPipelinesUpdate } from './pipelines.js';
-import { runBoxesComments, runBoxesCommentsAdd, runBoxesCreate, runBoxesDelete, runBoxesGet, runBoxesListInPipeline, runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksCreate, runBoxesTasksList, runBoxesTimeline, runBoxesUpdate, runCommentsDelete, runCommentsGet, runCommentsUpdate, runTasksDelete, runTasksGet, runTasksUpdate } from './boxes.js';
+import { runPipelinesBoxes, runPipelinesCreate, runPipelinesGet, runPipelinesList, runPipelinesUpdate } from './pipelines.js';
+import { runBoxesComments, runBoxesCommentsAdd, runBoxesCreate, runBoxesGet, runBoxesListInPipeline, runBoxesMeetingsAdd, runBoxesMeetingsList, runBoxesTasksCreate, runBoxesTasksList, runBoxesTimeline, runBoxesUpdate, runCommentsGet, runCommentsUpdate, runTasksGet, runTasksUpdate } from './boxes.js';
 import { runSearch } from './search.js';
-import { runMeetingsComplete, runMeetingsDelete } from './meetings.js';
-import { runBoxFieldValueGet, runBoxFieldValueUpdate, runBoxFieldValuesList, runFieldsCreate, runFieldsDelete, runFieldsGet, runFieldsList, runFieldsUpdate, runNewsfeedAll, runNewsfeedBox, runNewsfeedPipeline, runStagesCreate, runStagesDelete, runStagesGet, runStagesList, runStagesUpdate, runWebhooksCreate, runWebhooksDelete, runWebhooksGet, runWebhooksListPipeline, runWebhooksListTeam, runWebhooksUpdate } from './advanced.js';
-import { runContactsCreate, runContactsDelete, runContactsGet, runContactsUpdate, runFilesGet, runFilesList, runOrganizationsCreate, runOrganizationsDelete, runOrganizationsGet, runOrganizationsUpdate, runSnippetsCreate, runSnippetsDelete, runSnippetsGet, runSnippetsList, runSnippetsUpdate, runTeamsGet, runTeamsList, runThreadsGet, runThreadsList, runThreadsPutInBox, runThreadsRemove } from './entities.js';
+import { runMeetingsComplete } from './meetings.js';
+import { runBoxFieldValueGet, runBoxFieldValueUpdate, runBoxFieldValuesList, runFieldsCreate, runFieldsGet, runFieldsList, runFieldsUpdate, runNewsfeedAll, runNewsfeedBox, runNewsfeedPipeline, runStagesCreate, runStagesGet, runStagesList, runStagesUpdate, runWebhooksCreate, runWebhooksGet, runWebhooksListPipeline, runWebhooksListTeam, runWebhooksUpdate } from './advanced.js';
+import { runContactsCreate, runContactsGet, runContactsUpdate, runFilesGet, runFilesList, runOrganizationsCreate, runOrganizationsGet, runOrganizationsUpdate, runSnippetsCreate, runSnippetsGet, runSnippetsList, runSnippetsUpdate, runTeamsGet, runTeamsList, runThreadsGet, runThreadsList, runThreadsPutInBox } from './entities.js';
 
 function parseFlags(args) {
   const flags = {};
@@ -70,44 +70,37 @@ Commands:
   pipelines get <pipelineKey>
   pipelines create --name <name>
   pipelines update <pipelineKey> --body '<json>'
-  pipelines delete <pipelineKey>
   pipelines boxes <pipelineKey>
 
   boxes list <pipelineKey>
   boxes get <boxKey>
   boxes create <pipelineKey> --body '<json>'
   boxes update <boxKey> --body '<json>'
-  boxes delete <boxKey>
   boxes timeline <boxKey>
 
   boxes comments <boxKey>
   boxes comments add <boxKey> --message <text>
   comments get <commentKey>
   comments update <commentKey> --message <text>
-  comments delete <commentKey>
 
   boxes tasks <boxKey>
   boxes tasks add <boxKey> --text <task> [--due-date <ms>] [--assignee <email> --assignee <email> ...]
   tasks get <taskKey>
   tasks update <taskKey> --body '<json>'
-  tasks delete <taskKey>
 
   boxes meetings add <boxKey> --meeting-type <type> --start <ms> --duration <ms>
   boxes meetings list <boxKey>
   meetings complete <meetingKey>
-  meetings delete <meetingKey>
 
   stages list <pipelineKey>
   stages get <pipelineKey> <stageKey>
   stages create <pipelineKey> --name <name>
   stages update <pipelineKey> <stageKey> --name <name>
-  stages delete <pipelineKey> <stageKey>
 
   fields list <pipelineKey>
   fields get <pipelineKey> <fieldKey>
   fields create <pipelineKey> --body '<json>'
   fields update <pipelineKey> <fieldKey> --body '<json>'
-  fields delete <pipelineKey> <fieldKey>
   fields values list <boxKey>
   fields values get <boxKey> <fieldKey>
   fields values update <boxKey> <fieldKey> --body '<json>'
@@ -115,7 +108,6 @@ Commands:
   webhooks create --body '<json>'
   webhooks get <webhookKey>
   webhooks update <webhookKey> --body '<json>'
-  webhooks delete <webhookKey>
   webhooks list pipeline <pipelineKey>
   webhooks list team <teamKey>
 
@@ -129,12 +121,10 @@ Commands:
   contacts get <contactKey>
   contacts create <teamKey> --body '<json>'
   contacts update <contactKey> --body '<json>'
-  contacts delete <contactKey>
 
   organizations get <organizationKey>
   organizations create <teamKey> --body '<json>'
   organizations update <organizationKey> --body '<json>'
-  organizations delete <organizationKey>
 
   files list <boxKey>
   files get <fileKey>
@@ -142,13 +132,11 @@ Commands:
   threads list <boxKey>
   threads get <threadKey>
   threads put <boxKey> <threadKey>
-  threads delete <threadKey>
 
   snippets list
   snippets get <snippetKey>
   snippets create --body '<json>'
   snippets update <snippetKey> --body '<json>'
-  snippets delete <snippetKey>
 
   search <query>
 
@@ -189,11 +177,6 @@ export function resolveCommand(positionals) {
     return { type: 'pipelines.update', pipelineKey: rest[0], body };
   }
 
-  if (root === 'pipelines' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <pipelineKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'pipelines.delete', pipelineKey: rest[0] };
-  }
-
   if (root === 'pipelines' && sub === 'boxes') {
     if (!rest[0]) throw new CliError('Missing required argument: <pipelineKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'pipelines.boxes', pipelineKey: rest[0] };
@@ -221,11 +204,6 @@ export function resolveCommand(positionals) {
     const flags = parseFlags(rest.slice(1));
     const body = parseRequiredJsonFlag(flags, 'body');
     return { type: 'boxes.update', boxKey: rest[0], body };
-  }
-
-  if (root === 'boxes' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'boxes.delete', boxKey: rest[0] };
   }
 
   if (root === 'boxes' && sub === 'timeline') {
@@ -332,11 +310,6 @@ export function resolveCommand(positionals) {
     return { type: 'comments.update', commentKey: rest[0], message: String(message) };
   }
 
-  if (root === 'comments' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <commentKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'comments.delete', commentKey: rest[0] };
-  }
-
   if (root === 'tasks' && sub === 'get') {
     if (!rest[0]) throw new CliError('Missing required argument: <taskKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'tasks.get', taskKey: rest[0] };
@@ -349,19 +322,9 @@ export function resolveCommand(positionals) {
     return { type: 'tasks.update', taskKey: rest[0], body };
   }
 
-  if (root === 'tasks' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <taskKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'tasks.delete', taskKey: rest[0] };
-  }
-
   if (root === 'meetings' && sub === 'complete') {
     if (!rest[0]) throw new CliError('Missing required argument: <meetingKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'meetings.complete', meetingKey: rest[0] };
-  }
-
-  if (root === 'meetings' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <meetingKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'meetings.delete', meetingKey: rest[0] };
   }
 
   if (root === 'stages' && sub === 'list') {
@@ -390,11 +353,6 @@ export function resolveCommand(positionals) {
     return { type: 'stages.update', pipelineKey: rest[0], stageKey: rest[1], name: String(name) };
   }
 
-  if (root === 'stages' && sub === 'delete') {
-    if (!rest[0] || !rest[1]) throw new CliError('Usage: stages delete <pipelineKey> <stageKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'stages.delete', pipelineKey: rest[0], stageKey: rest[1] };
-  }
-
   if (root === 'fields' && sub === 'list') {
     if (!rest[0]) throw new CliError('Missing required argument: <pipelineKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'fields.list', pipelineKey: rest[0] };
@@ -417,11 +375,6 @@ export function resolveCommand(positionals) {
     const flags = parseFlags(rest.slice(2));
     const body = parseRequiredJsonFlag(flags, 'body');
     return { type: 'fields.update', pipelineKey: rest[0], fieldKey: rest[1], body };
-  }
-
-  if (root === 'fields' && sub === 'delete') {
-    if (!rest[0] || !rest[1]) throw new CliError('Usage: fields delete <pipelineKey> <fieldKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'fields.delete', pipelineKey: rest[0], fieldKey: rest[1] };
   }
 
   if (root === 'fields' && sub === 'values') {
@@ -458,11 +411,6 @@ export function resolveCommand(positionals) {
     const flags = parseFlags(rest.slice(1));
     const body = parseRequiredJsonFlag(flags, 'body');
     return { type: 'webhooks.update', webhookKey: rest[0], body };
-  }
-
-  if (root === 'webhooks' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <webhookKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'webhooks.delete', webhookKey: rest[0] };
   }
 
   if (root === 'webhooks' && sub === 'list') {
@@ -508,11 +456,6 @@ export function resolveCommand(positionals) {
     const body = parseRequiredJsonFlag(flags, 'body');
     return { type: 'contacts.update', contactKey: rest[0], body };
   }
-  if (root === 'contacts' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <contactKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'contacts.delete', contactKey: rest[0] };
-  }
-
   if (root === 'organizations' && sub === 'get') {
     if (!rest[0]) throw new CliError('Missing required argument: <organizationKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'organizations.get', organizationKey: rest[0] };
@@ -529,11 +472,6 @@ export function resolveCommand(positionals) {
     const body = parseRequiredJsonFlag(flags, 'body');
     return { type: 'organizations.update', organizationKey: rest[0], body };
   }
-  if (root === 'organizations' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <organizationKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'organizations.delete', organizationKey: rest[0] };
-  }
-
   if (root === 'files' && sub === 'list') {
     if (!rest[0]) throw new CliError('Missing required argument: <boxKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'files.list', boxKey: rest[0] };
@@ -555,11 +493,6 @@ export function resolveCommand(positionals) {
     if (!rest[0] || !rest[1]) throw new CliError('Usage: threads put <boxKey> <threadKey>', { code: 'ARG_ERROR', exitCode: 2 });
     return { type: 'threads.put', boxKey: rest[0], threadKey: rest[1] };
   }
-  if (root === 'threads' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <threadKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'threads.delete', threadKey: rest[0] };
-  }
-
   if (root === 'snippets' && sub === 'list') return { type: 'snippets.list' };
   if (root === 'snippets' && sub === 'get') {
     if (!rest[0]) throw new CliError('Missing required argument: <snippetKey>', { code: 'ARG_ERROR', exitCode: 2 });
@@ -576,11 +509,6 @@ export function resolveCommand(positionals) {
     const body = parseRequiredJsonFlag(flags, 'body');
     return { type: 'snippets.update', snippetKey: rest[0], body };
   }
-  if (root === 'snippets' && sub === 'delete') {
-    if (!rest[0]) throw new CliError('Missing required argument: <snippetKey>', { code: 'ARG_ERROR', exitCode: 2 });
-    return { type: 'snippets.delete', snippetKey: rest[0] };
-  }
-
   if (root === 'search') {
     const query = [sub, ...rest].filter(Boolean).join(' ').trim();
     if (!query) throw new CliError('Missing required argument: <query>', { code: 'ARG_ERROR', exitCode: 2 });
@@ -602,8 +530,6 @@ export async function runCommand({ command, client, token, json }) {
       return runPipelinesCreate({ token, json, name: command.name });
     case 'pipelines.update':
       return runPipelinesUpdate({ token, json, pipelineKey: command.pipelineKey, body: command.body });
-    case 'pipelines.delete':
-      return runPipelinesDelete({ token, json, pipelineKey: command.pipelineKey });
     case 'pipelines.boxes':
       return runPipelinesBoxes({ client, json, pipelineKey: command.pipelineKey });
     case 'boxes.list':
@@ -614,8 +540,6 @@ export async function runCommand({ command, client, token, json }) {
       return runBoxesCreate({ token, json, pipelineKey: command.pipelineKey, body: command.body });
     case 'boxes.update':
       return runBoxesUpdate({ token, json, boxKey: command.boxKey, body: command.body });
-    case 'boxes.delete':
-      return runBoxesDelete({ token, json, boxKey: command.boxKey });
     case 'boxes.timeline':
       return runBoxesTimeline({ token, json, boxKey: command.boxKey });
     case 'boxes.comments':
@@ -626,8 +550,6 @@ export async function runCommand({ command, client, token, json }) {
       return runCommentsGet({ token, json, commentKey: command.commentKey });
     case 'comments.update':
       return runCommentsUpdate({ token, json, commentKey: command.commentKey, message: command.message });
-    case 'comments.delete':
-      return runCommentsDelete({ token, json, commentKey: command.commentKey });
     case 'boxes.tasks.list':
       return runBoxesTasksList({ token, json, boxKey: command.boxKey });
     case 'boxes.tasks.add':
@@ -643,8 +565,6 @@ export async function runCommand({ command, client, token, json }) {
       return runTasksGet({ token, json, taskKey: command.taskKey });
     case 'tasks.update':
       return runTasksUpdate({ token, json, taskKey: command.taskKey, body: command.body });
-    case 'tasks.delete':
-      return runTasksDelete({ token, json, taskKey: command.taskKey });
     case 'boxes.meetings.add':
       return runBoxesMeetingsAdd({
         token,
@@ -658,8 +578,6 @@ export async function runCommand({ command, client, token, json }) {
       return runBoxesMeetingsList({ token, json, boxKey: command.boxKey });
     case 'meetings.complete':
       return runMeetingsComplete({ token, json, meetingKey: command.meetingKey });
-    case 'meetings.delete':
-      return runMeetingsDelete({ token, json, meetingKey: command.meetingKey });
     case 'stages.list':
       return runStagesList({ token, json, pipelineKey: command.pipelineKey });
     case 'stages.get':
@@ -668,8 +586,6 @@ export async function runCommand({ command, client, token, json }) {
       return runStagesCreate({ token, json, pipelineKey: command.pipelineKey, name: command.name });
     case 'stages.update':
       return runStagesUpdate({ token, json, pipelineKey: command.pipelineKey, stageKey: command.stageKey, name: command.name });
-    case 'stages.delete':
-      return runStagesDelete({ token, json, pipelineKey: command.pipelineKey, stageKey: command.stageKey });
     case 'fields.list':
       return runFieldsList({ token, json, pipelineKey: command.pipelineKey });
     case 'fields.get':
@@ -678,8 +594,6 @@ export async function runCommand({ command, client, token, json }) {
       return runFieldsCreate({ token, json, pipelineKey: command.pipelineKey, body: command.body });
     case 'fields.update':
       return runFieldsUpdate({ token, json, pipelineKey: command.pipelineKey, fieldKey: command.fieldKey, body: command.body });
-    case 'fields.delete':
-      return runFieldsDelete({ token, json, pipelineKey: command.pipelineKey, fieldKey: command.fieldKey });
     case 'fields.values.list':
       return runBoxFieldValuesList({ token, json, boxKey: command.boxKey });
     case 'fields.values.get':
@@ -692,8 +606,6 @@ export async function runCommand({ command, client, token, json }) {
       return runWebhooksGet({ token, json, webhookKey: command.webhookKey });
     case 'webhooks.update':
       return runWebhooksUpdate({ token, json, webhookKey: command.webhookKey, body: command.body });
-    case 'webhooks.delete':
-      return runWebhooksDelete({ token, json, webhookKey: command.webhookKey });
     case 'webhooks.list.pipeline':
       return runWebhooksListPipeline({ token, json, pipelineKey: command.pipelineKey });
     case 'webhooks.list.team':
@@ -714,16 +626,12 @@ export async function runCommand({ command, client, token, json }) {
       return runContactsCreate({ token, json, teamKey: command.teamKey, body: command.body });
     case 'contacts.update':
       return runContactsUpdate({ token, json, contactKey: command.contactKey, body: command.body });
-    case 'contacts.delete':
-      return runContactsDelete({ token, json, contactKey: command.contactKey });
     case 'organizations.get':
       return runOrganizationsGet({ token, json, organizationKey: command.organizationKey });
     case 'organizations.create':
       return runOrganizationsCreate({ token, json, teamKey: command.teamKey, body: command.body });
     case 'organizations.update':
       return runOrganizationsUpdate({ token, json, organizationKey: command.organizationKey, body: command.body });
-    case 'organizations.delete':
-      return runOrganizationsDelete({ token, json, organizationKey: command.organizationKey });
     case 'files.list':
       return runFilesList({ token, json, boxKey: command.boxKey });
     case 'files.get':
@@ -734,8 +642,6 @@ export async function runCommand({ command, client, token, json }) {
       return runThreadsGet({ token, json, threadKey: command.threadKey });
     case 'threads.put':
       return runThreadsPutInBox({ token, json, boxKey: command.boxKey, threadKey: command.threadKey });
-    case 'threads.delete':
-      return runThreadsRemove({ token, json, threadKey: command.threadKey });
     case 'snippets.list':
       return runSnippetsList({ token, json });
     case 'snippets.get':
@@ -744,8 +650,6 @@ export async function runCommand({ command, client, token, json }) {
       return runSnippetsCreate({ token, json, body: command.body });
     case 'snippets.update':
       return runSnippetsUpdate({ token, json, snippetKey: command.snippetKey, body: command.body });
-    case 'snippets.delete':
-      return runSnippetsDelete({ token, json, snippetKey: command.snippetKey });
     case 'search':
       return runSearch({ client, json, query: command.query });
     default:

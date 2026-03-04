@@ -145,12 +145,6 @@ export async function runBoxesUpdate({ token, json, boxKey, body, apiRequest = s
   console.log(`Updated box ${boxKey}`);
 }
 
-export async function runBoxesDelete({ token, json, boxKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/boxes/${boxKey}` });
-  if (json) return printJson(result ?? { deleted: true, boxKey });
-  console.log(`Deleted box ${boxKey}`);
-}
-
 export async function runBoxesTimeline({ token, json, boxKey, apiRequest = streakApiRequest }) {
   // Streak exposes box activity as "newsfeed" (not /timeline).
   const items = await apiRequest({ token, method: 'GET', path: `/api/v1/boxes/${boxKey}/newsfeed` });
@@ -175,12 +169,6 @@ export async function runCommentsUpdate({ token, json, commentKey, message, apiR
   console.log(`Updated comment ${commentKey}`);
 }
 
-export async function runCommentsDelete({ token, json, commentKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/comments/${commentKey}` });
-  if (json) return printJson(result ?? { deleted: true, commentKey });
-  console.log(`Deleted comment ${commentKey}`);
-}
-
 export async function runTasksGet({ token, json, taskKey, apiRequest = streakApiRequest }) {
   const task = await apiRequest({ token, method: 'GET', path: `/api/v1/tasks/${taskKey}` });
   if (json) return printJson(task);
@@ -193,8 +181,3 @@ export async function runTasksUpdate({ token, json, taskKey, body, apiRequest = 
   console.log(`Updated task ${taskKey}`);
 }
 
-export async function runTasksDelete({ token, json, taskKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/tasks/${taskKey}` });
-  if (json) return printJson(result ?? { deleted: true, taskKey });
-  console.log(`Deleted task ${taskKey}`);
-}

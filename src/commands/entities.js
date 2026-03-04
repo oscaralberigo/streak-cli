@@ -32,12 +32,6 @@ export async function runContactsUpdate({ token, json, contactKey, body, apiRequ
   console.log(`Updated contact ${contactKey}`);
 }
 
-export async function runContactsDelete({ token, json, contactKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/contacts/${contactKey}` });
-  if (json) return printJson(result ?? { deleted: true, contactKey });
-  console.log(`Deleted contact ${contactKey}`);
-}
-
 export async function runOrganizationsGet({ token, json, organizationKey, apiRequest = streakApiRequest }) {
   const org = await apiRequest({ token, method: 'GET', path: `/api/v1/organizations/${organizationKey}` });
   if (json) return printJson(org);
@@ -54,12 +48,6 @@ export async function runOrganizationsUpdate({ token, json, organizationKey, bod
   const org = await apiRequest({ token, method: 'POST', path: `/api/v1/organizations/${organizationKey}`, json: body });
   if (json) return printJson(org);
   console.log(`Updated organization ${organizationKey}`);
-}
-
-export async function runOrganizationsDelete({ token, json, organizationKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/organizations/${organizationKey}` });
-  if (json) return printJson(result ?? { deleted: true, organizationKey });
-  console.log(`Deleted organization ${organizationKey}`);
 }
 
 export async function runFilesList({ token, json, boxKey, apiRequest = streakApiRequest }) {
@@ -94,12 +82,6 @@ export async function runThreadsPutInBox({ token, json, boxKey, threadKey, apiRe
   console.log(`Added thread ${threadKey} to box ${boxKey}`);
 }
 
-export async function runThreadsRemove({ token, json, threadKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/threads/${threadKey}` });
-  if (json) return printJson(result ?? { removed: true, threadKey });
-  console.log(`Removed thread ${threadKey}`);
-}
-
 export async function runSnippetsList({ token, json, apiRequest = streakApiRequest }) {
   const snippets = await apiRequest({ token, method: 'GET', path: '/api/v1/snippets' });
   if (json) return printJson(snippets);
@@ -125,8 +107,3 @@ export async function runSnippetsUpdate({ token, json, snippetKey, body, apiRequ
   console.log(`Updated snippet ${snippetKey}`);
 }
 
-export async function runSnippetsDelete({ token, json, snippetKey, apiRequest = streakApiRequest }) {
-  const result = await apiRequest({ token, method: 'DELETE', path: `/api/v1/snippets/${snippetKey}` });
-  if (json) return printJson(result ?? { deleted: true, snippetKey });
-  console.log(`Deleted snippet ${snippetKey}`);
-}
